@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>MP3 Player</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #eaeaea;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.95);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #eaeaea;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .control-panel {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    .now-playing {
+      text-align: center;
+    }
+
+    .album-art {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      animation: rotate 20s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .album-art.playing {
+      animation-play-state: running;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .album-art-icon {
+      font-size: 60px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .track-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 20px;
+    }
+
+    .track-info {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .progress-container {
+      padding: 0 10px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .progress-time {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    .playback-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: #eaeaea;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .control-btn:active {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(0.95);
+    }
+
+    .control-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .control-btn.play-pause {
+      width: 65px;
+      height: 65px;
+      font-size: 26px;
+    }
+
+    .settings-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .setting-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      font-size: 13px;
+      color: #ccc;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-select {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #eaeaea;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .setting-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .volume-slider {
+      width: 80px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .playlist-panel {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .playlist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .playlist-header h2 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .playlist-count {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .playlist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .playlist-item:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .playlist-item.active {
+      background: rgba(102, 126, 234, 0.2);
+      border-color: #667eea;
+    }
+
+    .playlist-item.selected {
+      border-color: #764ba2;
+    }
+
+    .playlist-item-checkbox {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    .playlist-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .playlist-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .playlist-item-duration {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .playlist-item-playing {
+      color: #667eea;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 50px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎵 MP3 Player</h1>
+    <div class="header-buttons">
+      <button class="btn btn-secondary" onclick="addFiles()">
+        <span>📁</span> 添加
+      </button>
+      <button class="btn btn-primary" onclick="playSelected()">
+        <span>▶</span> 播放选中
+      </button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="control-panel">
+      <div class="now-playing">
+        <div class="album-art" id="albumArt">
+          <div class="album-art-icon">🎵</div>
+        </div>
+        <div class="track-title" id="trackTitle">未播放</div>
+        <div class="track-info" id="trackInfo">-</div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar" onclick="seek(event)">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-time">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">0:00</span>
+        </div>
+      </div>
+
+      <div class="playback-controls">
+        <button class="control-btn" onclick="previousTrack()" title="上一首">⏮</button>
+        <button class="control-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()" title="播放/暂停">▶</button>
+        <button class="control-btn" onclick="nextTrack()" title="下一首">⏭</button>
+      </div>
+
+      <div class="settings-panel">
+        <div class="setting-row">
+          <span class="setting-label">播放模式</span>
+          <div class="setting-control">
+            <select class="setting-select" id="playMode" onchange="updatePlayMode()">
+              <option value="sequence">顺序播放</option>
+              <option value="shuffle">随机播放</option>
+              <option value="single">单曲循环</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">播放次数</span>
+          <div class="setting-control">
+            <select class="setting-select" id="playCount" onchange="updatePlayCount()">
+              <option value="1">播放 1 次</option>
+              <option value="2">播放 2 次</option>
+              <option value="loop">循环播放</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">音量</span>
+          <div class="volume-control">
+            <span>🔊</span>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80" onchange="updateVolume()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="playlist-panel">
+      <div class="playlist-header">
+        <h2>播放列表</h2>
+        <span class="playlist-count" id="playlistCount">0 首歌曲</span>
+      </div>
+      <div class="playlist" id="playlist">
+        <div class="empty-state">
+          <div class="empty-state-icon">🎵</div>
+          <div class="empty-state-text">点击"添加"按钮添加音乐文件</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" class="hidden-input" accept="audio/*" multiple onchange="handleFileSelect(event)">
+  <audio id="audioPlayer"></audio>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
