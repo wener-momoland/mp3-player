@@ -1,11 +1,12 @@
 {
   "appId": "com.dumate.mp3player",
-  "appName": "MP3 Player",
+  "appName": "Media Player",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "orientation": "portrait"
   }
 }

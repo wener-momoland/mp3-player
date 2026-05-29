@@ -1,7 +1,7 @@
 {
   "name": "minimal-mp3-player",
-  "version": "1.0.0",
-  "description": "极简本地MP3播放器 - Android版",
+  "version": "1.1.0",
+  "description": "极简本地媒体播放器 - 支持 MP3/MP4 播放和热更新",
   "main": "index.html",
   "scripts": {
     "serve": "npx http-server -p 8080 -c-1",
