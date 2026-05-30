@@ -44,32 +44,21 @@ jobs:
 
     - name: Replace app icon
       run: |
-        # 检查图标文件是否存在
         if [ -f "icons/app_icon.png" ]; then
           echo "正在替换应用图标..."
-          
-          # 安装 ImageMagick 用于调整图片尺寸
           sudo apt-get install -y imagemagick
           
-          # 定义图标尺寸和目标目录
-          declare -A sizes=(
-            ["mipmap-mdpi"]="48"
-            ["mipmap-hdpi"]="72"
-            ["mipmap-xhdpi"]="96"
-            ["mipmap-xxhdpi"]="144"
-            ["mipmap-xxxhdpi"]="192"
-          )
+          # 定义图标尺寸
+          sizes=("48" "72" "96" "144" "192")
+          dirs=("mipmap-mdpi" "mipmap-hdpi" "mipmap-xhdpi" "mipmap-xxhdpi" "mipmap-xxxhdpi")
           
-          # 为每个分辨率生成图标
-          for dir in "${!sizes[@]}"; do
-            size=${sizes[$dir]}
+          for i in "${!sizes[@]}"; do
+            size=${sizes[$i]}
+            dir=${dirs[$i]}
             target_dir="android/app/src/main/res/$dir"
             mkdir -p "$target_dir"
             
-            # 生成普通图标
             convert icons/app_icon.png -resize ${size}x${size} "$target_dir/ic_launcher.png"
-            
-            # 生成圆角图标（如果需要）
             convert icons/app_icon.png -resize ${size}x${size} "$target_dir/ic_launcher_round.png"
             
             echo "已生成 $dir 图标 (${size}x${size})"
